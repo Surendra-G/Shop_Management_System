@@ -46,6 +46,40 @@ async function initializeDatabase() {
       )
     `);
 
+    // Create orders table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        shop_id INT NOT NULL,
+        order_number VARCHAR(20) NOT NULL UNIQUE,
+        subtotal DECIMAL(10, 2) NOT NULL,
+        tax DECIMAL(10, 2) NOT NULL,
+        total DECIMAL(10, 2) NOT NULL,
+        payment_received DECIMAL(10, 2) NOT NULL,
+        change_amount DECIMAL(10, 2) NOT NULL,
+        status ENUM('pending', 'completed', 'cancelled') DEFAULT 'completed',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (shop_id) REFERENCES shops(id)
+      )
+    `);
+
+
+    // Create order_items table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS order_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        unit_price DECIMAL(10, 2) NOT NULL,
+        total_price DECIMAL(10, 2) NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES orders(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
+      )
+    `);
+
+
+
     connection.release();
     console.log('Database tables initialized');
   } catch (error) {
